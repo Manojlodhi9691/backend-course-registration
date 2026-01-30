@@ -23,13 +23,13 @@ app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
 app.use('/api/payments', paymentRoutes);
 // --- DATABASE CONNECTION ---
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 const MONGO_URI = process.env.MONGO_URI || "your_mongodb_connection_string_here";
 
 mongoose.connect(MONGO_URI)
     .then(() => {
         console.log("✅ Connected to MongoDB");
-        app.listen(PORT, () => {
+        app.listen(PORT,'0.0.0.0' ,() => {
             console.log(`🚀 Server running on http://localhost:${PORT}`);
         });
     })
