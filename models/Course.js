@@ -8,7 +8,7 @@ const courseSchema = new mongoose.Schema({
   faculty: { 
     type: mongoose.Schema.Types.ObjectId, 
     ref: 'Faculty', 
-    required: true 
+    required: false // 👈 CHANGE THIS FROM true TO false
   },
   // Points to Student collection
   studentsEnrolled: [{ 
