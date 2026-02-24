@@ -16,12 +16,35 @@ app.use(express.json());
 app.use(cookieParser());
 
 // ✅ FIXED CORS: Removed the trailing slash from the URL (Very Important!)
+// ✅ DYNAMIC CORS (Handles all your Vercel preview and production URLs)
+// ✅ FLEXIBLE CORS: Handles all Vercel previews and your local machine
+const allowedOrigins = [
+  "https://frontend-course-registration.vercel.app", // Your main domain
+  "http://localhost:5173"                           // Your local machine
+];
+
+// ✅ FLEXIBLE CORS: Handles all Vercel previews and your local machine
+const allowedOrigins = [
+  "https://frontend-course-registration.vercel.app", // Your main domain
+  "http://localhost:5173"                           // Your local machine
+];
+
 app.use(cors({
-  origin: "https://frontend-course-registration-o1qgsivzt-manojlodhi9691s-projects.vercel.app", 
+  origin: function (origin, callback) {
+    // 1. Allow requests with no origin (like mobile apps or Postman)
+    if (!origin) return callback(null, true);
+
+    // 2. Allow any origin that ends with ".vercel.app" (Dynamic Previews)
+    // 3. Allow your specifically listed origins
+    if (origin.endsWith(".vercel.app") || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ["GET", "POST", "PUT", "DELETE"]
 }));
-
 // --- ROUTES ---
 app.use('/api/auth', authRoutes);
 app.use('/api/courses', courseRoutes);
