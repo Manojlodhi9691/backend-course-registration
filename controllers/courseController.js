@@ -2,7 +2,7 @@ const Course = require('../models/Course');
 const User = require('../models/Student')
 exports.getAllCourses = async (req, res) => {
   try {
-    // Explicitly tell Mongoose to use the 'Faculty' model for population
+    
     const courses = await Course.find().populate({
       path: 'faculty',
       model: 'Faculty',
@@ -21,7 +21,7 @@ exports.createCourse = async (req, res) => {
       title, 
       price, 
       description,
-      faculty: req.user.id // ID from auth middleware
+      faculty: req.user.id 
     });
     await newCourse.save();
     res.status(201).json(newCourse);
@@ -30,7 +30,7 @@ exports.createCourse = async (req, res) => {
   }
 };
 
-// backend/controllers/courseController.js
+
 exports.enrollInCourse = async (req, res) => {
     try {
         const { courseId } = req.body;
@@ -39,16 +39,16 @@ exports.enrollInCourse = async (req, res) => {
         const course = await Course.findById(courseId);
         if (!course) return res.status(404).json({ message: "Course not found" });
 
-        // FIX: Prevent multiple enrollments
+        
         if (course.studentsEnrolled.includes(userId)) {
             return res.status(200).json({ success: true, message: "Already enrolled" });
         }
 
-        // Add student to course
+        
         course.studentsEnrolled.push(userId);
         await course.save();
 
-        // Add course to student's record (for the dashboard count)
+        
         const student = await User.findById(userId);
         if (student) {
             if (!student.enrolledCourses) student.enrolledCourses = [];
@@ -90,7 +90,6 @@ exports.getCourseById = async (req, res) => {
             return res.status(404).json({ message: "Course not found" });
         }
 
-        // FIX: Match the field name 'studentsEnrolled' from your Course model
         const isEnrolled = course.studentsEnrolled && req.user 
             ? course.studentsEnrolled.includes(req.user.id) 
             : false;
@@ -106,12 +105,10 @@ exports.getCourseById = async (req, res) => {
 };
 exports.getEnrolledCourses = async (req, res) => {
     try {
-        // Find the user and populate the 'enrolledCourses' field
         const user = await User.findById(req.user.id).populate('enrolledCourses');
         
         if (!user) return res.status(404).json({ message: "User not found" });
 
-        // Return just the array of course objects
         res.status(200).json(user.enrolledCourses);
     } catch (error) {
         res.status(500).json({ message: "Error fetching enrolled courses" });

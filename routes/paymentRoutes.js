@@ -3,18 +3,18 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 const router = express.Router();
 const { auth } = require('../middleware/auth');
-const Course = require('../models/Course'); // Added Course model import
+const Course = require('../models/Course'); 
 
-// 1. Create Order Route
+
 router.post('/create-order', auth, async (req, res) => {
     if (req.user.role === 'faculty') {
         return res.status(403).json({ message: "Faculty cannot purchase courses." });
     }
 
     try {
-        const { amount, courseId } = req.body; // Expecting courseId from frontend
+        const { amount, courseId } = req.body; 
 
-        // --- NEW CHECK: PREVENT MULTIPLE PURCHASES ---
+
         if (courseId) {
             const course = await Course.findById(courseId);
             if (course && course.studentsEnrolled.includes(req.user.id)) {

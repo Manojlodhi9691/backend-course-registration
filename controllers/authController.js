@@ -36,7 +36,6 @@ exports.login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // 1. Search Faculty first, then Student
         let user = await Faculty.findOne({ email });
         let userType = 'faculty';
 
@@ -49,16 +48,14 @@ exports.login = async (req, res) => {
             return res.status(404).json({ message: "Account not found" });
         }
 
-        // 2. SMART PASSWORD VERIFICATION
-        // Check if the password in DB is hashed (bcrypt hashes start with '$2')
         const isHashed = user.password.startsWith('$2');
         let isMatch = false;
 
         if (isHashed) {
-            // Compare typed password with hashed DB password
+            
             isMatch = await bcrypt.compare(password, user.password);
         } else {
-            // Direct comparison for your manual plain-text "123" entries
+            
             isMatch = (password === user.password);
         }
 
@@ -66,7 +63,7 @@ exports.login = async (req, res) => {
             return res.status(401).json({ message: "Invalid credentials" });
         }
 
-        // 3. Create Token
+        
         const token = jwt.sign(
             { id: user._id, role: userType }, 
             process.env.JWT_SECRET || 'your_secret_key',

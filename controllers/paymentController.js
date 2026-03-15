@@ -2,15 +2,15 @@ const Razorpay = require('razorpay');
 const crypto = require('crypto');
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID, // Add to your .env
-  key_secret: process.env.RAZORPAY_KEY_SECRET // Add to your .env
+  key_id: process.env.RAZORPAY_KEY_ID, 
+  key_secret: process.env.RAZORPAY_KEY_SECRET 
 });
 
-// Step 1: Create an Order
+
 exports.createOrder = async (req, res) => {
   try {
     const options = {
-    amount: 50000, // Fixed ₹500 for testing
+    amount: 50000, 
     currency: "INR",
     receipt: "test_receipt_1",
 };
@@ -22,7 +22,7 @@ exports.createOrder = async (req, res) => {
   }
 };
 
-// Step 2: Verify Payment Signature
+
 exports.verifyPayment = async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
 
