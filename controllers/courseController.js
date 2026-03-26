@@ -137,3 +137,24 @@ exports.getEnrolledCourses = async (req, res) => {
         res.status(500).json({ message: "Error fetching your learning library" });
     }
 };
+exports.addLecture = async (req, res) => {
+    try {
+        const { title, videoUrl } = req.body;
+        const course = await Course.findById(req.params.id);
+
+        if (!course) return res.status(404).json({ message: "Course not found" });
+
+        // Ensure the person adding is the owner of the course
+        if (course.faculty.toString() !== req.user.id) {
+            return res.status(401).json({ message: "Not authorized to edit this course" });
+        }
+
+        // Push new lecture into the array
+        course.lectures.push({ title, videoUrl });
+        await course.save();
+
+        res.status(200).json({ message: "Lecture added successfully", lectures: course.lectures });
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+};

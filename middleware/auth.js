@@ -29,6 +29,9 @@ const authorize = (...roles) => {
     next();
   };
 };
+const facultyAuth = (req, res, next) => {
+    // This calls your authorize function specifically for faculty
+    return authorize('faculty')(req, res, next);
+};
 
-
-module.exports = { auth, authorize };
+module.exports = { auth, authorize,facultyAuth:authorize('faculty') };

@@ -20,4 +20,6 @@ router.get('/enrolled', auth, authorize('student'), courseController.getEnrolled
 
 router.get('/:id', courseController.getCourseById);
 
+router.put('/:id/add-lecture', auth, authorize('faculty'), courseController.addLecture);
+
 module.exports = router;

@@ -33,6 +33,12 @@ const courseSchema = new mongoose.Schema({
     type: [String],
     default: []
   },
+  // NEW: Lectures Array
+  lectures: [{
+    title: { type: String, required: true },
+    videoUrl: { type: String, required: true }, // YouTube link or Video ID
+    duration: String
+  }],
 
   faculty: { 
     type: mongoose.Schema.Types.ObjectId, 
