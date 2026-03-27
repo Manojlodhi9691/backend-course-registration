@@ -1,8 +1,8 @@
-const Course = require('../models/Course');
-const User = require('../models/Student'); 
+import Course from '../models/Course.js';
+import User from '../models/Student.js'; // Ensure the .js extension is here too
 
 // 1. PUBLIC: Get all courses
-exports.getAllCourses = async (req, res) => {
+export const getAllCourses = async (req, res) => {
     try {
         const courses = await Course.find().populate('faculty', 'name');
         res.status(200).json(courses);
@@ -12,34 +12,22 @@ exports.getAllCourses = async (req, res) => {
     }
 };
 
-// 2. FACULTY ONLY: Create a new course (Updated with detailed fields)
-exports.createCourse = async (req, res) => {
+// 2. FACULTY ONLY: Create a new course
+export const createCourse = async (req, res) => {
     try {
-        // Pulling the new fields from the frontend request body
         const { 
-            title, 
-            price, 
-            description, 
-            instructorExperience, 
-            duration, 
-            batchTiming, 
-            subjects 
+            title, price, description, instructorExperience, 
+            duration, batchTiming, subjects 
         } = req.body;
         
         const newCourse = new Course({ 
-            title, 
-            price, 
-            description,
-            instructorExperience,
-            duration,
-            batchTiming,
-            subjects: subjects || [], // Expecting an array of strings
+            title, price, description, instructorExperience,
+            duration, batchTiming,
+            subjects: subjects || [], 
             faculty: req.user.id 
         });
 
         const savedCourse = await newCourse.save();
-
-        // Populate faculty name so the UI updates correctly immediately
         const populatedCourse = await Course.findById(savedCourse._id).populate('faculty', 'name');
 
         res.status(201).json(populatedCourse);
@@ -49,10 +37,9 @@ exports.createCourse = async (req, res) => {
     }
 };
 
-// 3. PUBLIC/PRIVATE: Get single course details (Updated with full metadata)
-exports.getCourseById = async (req, res) => {
+// 3. PUBLIC/PRIVATE: Get single course details
+export const getCourseById = async (req, res) => {
     try {
-        // Added 'email' to faculty populate for more detail
         const course = await Course.findById(req.params.id).populate('faculty', 'name email');
         
         if (!course) {
@@ -64,10 +51,7 @@ exports.getCourseById = async (req, res) => {
             isEnrolled = course.studentsEnrolled.includes(req.user.id);
         }
 
-        res.status(200).json({
-            ...course._doc,
-            isEnrolled
-        });
+        res.status(200).json({ ...course._doc, isEnrolled });
     } catch (error) {
         console.error("Error in getCourseById:", error);
         res.status(500).json({ message: "Server error fetching course details" });
@@ -75,7 +59,7 @@ exports.getCourseById = async (req, res) => {
 };
 
 // 4. PRIVATE: Handle Enrollment
-exports.enrollInCourse = async (req, res) => {
+export const enrollInCourse = async (req, res) => {
     try {
         const { courseId } = req.body;
         const userId = req.user.id;
@@ -105,7 +89,7 @@ exports.enrollInCourse = async (req, res) => {
 };
 
 // 5. FACULTY ONLY: Dashboard Stats
-exports.getFacultyCourses = async (req, res) => {
+export const getFacultyCourses = async (req, res) => {
     try {
         const courses = await Course.find({ faculty: req.user.id })
             .populate('studentsEnrolled', 'name email');
@@ -128,7 +112,7 @@ exports.getFacultyCourses = async (req, res) => {
 };
 
 // 6. STUDENT ONLY: Purchased Library
-exports.getEnrolledCourses = async (req, res) => {
+export const getEnrolledCourses = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate('enrolledCourses');
         if (!user) return res.status(404).json({ message: "User not found" });
@@ -137,24 +121,49 @@ exports.getEnrolledCourses = async (req, res) => {
         res.status(500).json({ message: "Error fetching your learning library" });
     }
 };
-exports.addLecture = async (req, res) => {
+
+// 7. FACULTY ONLY: Add Lecture
+export const addLecture = async (req, res) => {
     try {
         const { title, videoUrl } = req.body;
         const course = await Course.findById(req.params.id);
 
         if (!course) return res.status(404).json({ message: "Course not found" });
 
-        // Ensure the person adding is the owner of the course
         if (course.faculty.toString() !== req.user.id) {
             return res.status(401).json({ message: "Not authorized to edit this course" });
         }
 
-        // Push new lecture into the array
         course.lectures.push({ title, videoUrl });
         await course.save();
 
         res.status(200).json({ message: "Lecture added successfully", lectures: course.lectures });
     } catch (err) {
         res.status(500).json({ message: err.message });
+    }
+};
+
+// 8. FACULTY ONLY: Delete Lecture
+export const deleteLecture = async (req, res) => {
+    try {
+        const { courseId, lectureId } = req.params;
+
+        const course = await Course.findByIdAndUpdate(
+            courseId,
+            { $pull: { lectures: { _id: lectureId } } }, 
+            { new: true }
+        );
+
+        if (!course) {
+            return res.status(404).json({ message: "Course not found" });
+        }
+
+        res.status(200).json({ 
+            message: "Lecture deleted successfully", 
+            lectures: course.lectures 
+        });
+    } catch (err) {
+        console.error("Error deleting lecture:", err);
+        res.status(500).json({ message: "Internal Server Error" });
     }
 };

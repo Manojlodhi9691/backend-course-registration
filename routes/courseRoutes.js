@@ -1,25 +1,30 @@
-const express = require('express');
+import express from 'express';
+// 1. Import the controller functions (Note the .js extension)
+import { 
+    createCourse, 
+    getAllCourses, 
+    getFacultyCourses, 
+    enrollInCourse, 
+    getEnrolledCourses, 
+    getCourseById, 
+    addLecture, 
+    deleteLecture 
+} from '../controllers/courseController.js';
+
+// 2. Import your middleware (Using the names defined in your auth file)
+import { auth, authorize } from '../middleware/auth.js'; 
+
 const router = express.Router();
-const courseController = require('../controllers/courseController');
 
-const { auth, authorize } = require('../middleware/auth'); 
+// Existing Routes
+router.post('/create', auth, authorize('faculty'), createCourse);
+router.get('/', getAllCourses);
+router.get('/faculty', auth, authorize('faculty'), getFacultyCourses);
+router.post('/enroll', auth, authorize('student'), enrollInCourse);
+router.get('/enrolled', auth, authorize('student'), getEnrolledCourses);
+router.get('/:id', getCourseById);
+router.put('/:id/add-lecture', auth, authorize('faculty'), addLecture);
 
-
-router.post('/create', auth, authorize('faculty'), courseController.createCourse);
-
-
-router.get('/', courseController.getAllCourses);
-
-
-router.get('/faculty', auth, authorize('faculty'), courseController.getFacultyCourses);
-
-
-router.post('/enroll', auth, authorize('student'), courseController.enrollInCourse);
-
-router.get('/enrolled', auth, authorize('student'), courseController.getEnrolledCourses);
-
-router.get('/:id', courseController.getCourseById);
-
-router.put('/:id/add-lecture', auth, authorize('faculty'), courseController.addLecture);
-
-module.exports = router;
+// 3. Updated Delete Route to use 'auth' and 'authorize' to match your imports
+router.delete('/:courseId/lectures/:lectureId', auth, authorize('faculty'), deleteLecture);
+export default router;

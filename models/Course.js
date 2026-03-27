@@ -34,11 +34,13 @@ const courseSchema = new mongoose.Schema({
     default: []
   },
   // NEW: Lectures Array
-  lectures: [{
-    title: { type: String, required: true },
-    videoUrl: { type: String, required: true }, // YouTube link or Video ID
-    duration: String
-  }],
+  // Inside your Course Schema, update the lectures array:
+lectures: [{
+  title: { type: String, required: true },
+  videoUrl: { type: String, required: true }, // This will be the Cloudinary/S3 link
+  public_id: { type: String }, // Useful for deleting the video later
+  duration: { type: String }
+}],
 
   faculty: { 
     type: mongoose.Schema.Types.ObjectId, 
